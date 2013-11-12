@@ -71,7 +71,7 @@ input[type=checkbox],#add
 	echo "<a href='index.php?logout=1' style='float:right'>logout</a>";
 	if($token[0]=='fac')
 	{
-		echo "<h3>Subjects<h3>";
+		echo "<h3>Subjects</h3>";
 		$query="SELECT * FROM `subject` WHERE `fac_id`=$token[1]";
 		$result=$mysqli->query($query);
 		$sub="<table>";
@@ -94,6 +94,21 @@ input[type=checkbox],#add
 		$add.="</form>";
 		$add.="</div>";
 		echo $add;
+	}
+	if($token[0]=='adm')
+	{
+		echo "<h3>FACULTIES</h3>";
+		$query="SELECT name,id FROM (SELECT faculty.name,faculty.id,user.validate FROM faculty INNER JOIN user ON faculty.id=user.id) AS fac WHERE validate=0;";
+		$result=$mysqli->query($query);
+		$sub="<form action='validate.php' method='post'><table>";
+		$sub.="<tr><th>WAITING TO BE VALIDATED</th></tr><tr><th>FACULTY NAME</th></tr>";
+		while($row=$result->fetch_assoc())
+		{
+			$sub.="<tr><td>".$row['name']."</td><td>
+			<input type='submit' value='validate' name='".$row['id']."'></td></tr>"
+		}
+		$sub.="</table></form>";
+		echo $sub;
 	}
 ?>
 	
