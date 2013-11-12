@@ -1,10 +1,6 @@
 <?php
 	session_start();
-	if($_REQUEST['logout'])
-	{
-		session_destroy();
-	}
-	else if(isset($_COOKIE['token']))
+	if(isset($_COOKIE['token']))
 	{
 		header('location:home.php');
 	}
