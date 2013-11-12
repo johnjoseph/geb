@@ -68,6 +68,7 @@ input[type=checkbox],#add
 <body>
 <?php
 	$token=explode('_',$_COOKIE['token']);
+	echo "<a href='index.php?logout=1' style='float:right'>logout</a>";
 	if($token[0]=='fac')
 	{
 		echo "<h3>Subjects<h3>";
