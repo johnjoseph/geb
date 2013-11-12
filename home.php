@@ -104,7 +104,6 @@ input[type=checkbox],#add
 		while($row=$result->fetch_assoc())
 		{
 			$sub.="<tr><td>".$row['name']."</td><td>
-			<input type='hidden' name='id' value='".$row['id']."'>
 			<input type='submit' value='validate' name='".$row['id']."'></td></tr>"
 		}
 		$sub.="</table></form>";
