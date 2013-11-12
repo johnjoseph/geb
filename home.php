@@ -2,7 +2,13 @@
 	session_start();
 	require_once('connect.php');
 	/* signup */
-	if(isset($_REQUEST['name'])&&($_REQUEST['name']!=''))
+	if(isset($_REQUEST['id']))
+	{
+		$query="UPDATE `user` SET `validate`=1 where `id`='$_REQUEST[id]'";	
+		$mysqli->query($query);
+		echo "validated";
+	}
+	else if(isset($_REQUEST['name'])&&($_REQUEST['name']!=''))
 	{
 		$query="SELECT MAX(`id`) FROM `faculty`";
 		$result=$mysqli->query($query);
@@ -16,22 +22,14 @@
 		$_COOKIE['token']='fac_'.$max;
 	}
 	/* login */
-	else if(isset($_REQUEST['username'])&&($_REQUEST['name']!=''))
+	else if(isset($_REQUEST['username'])&&($_REQUEST['username']!=''))
 	{
-		if(($_REQUEST['username']=='admin')&&($_REQUEST['username']=='password'))
+		$query="SELECT * FROM `user` WHERE `username`='$_REQUEST[username]' AND `password`='$_REQUEST[password]'";
+		if($result=$mysqli->query($query))
 		{
-			setcookie('token','adm_1',time()+24*3600);
-			$_COOKIE['token']='adm_1';			
-		}
-		else
-		{
-			$query="SELECT * FROM `user` WHERE `username`='$_REQUEST[username]' AND `password`='$_REQUEST[password]'";
-			if($result=$mysqli->query($query))
-			{
-				$row=$result->fetch_assoc();
-				setcookie('token',$row['type'].'_'.$row['id'],time()+24*3600);
-				$_COOKIE['token']=$row['type'].'_'.$row['id'];
-			}
+			$row=$result->fetch_assoc();
+			setcookie('token',$row['type'].'_'.$row['id'],time()+24*3600);
+			$_COOKIE['token']=$row['type'].'_'.$row['id'];
 		}
 	}
 	/* add subject */
@@ -87,6 +85,14 @@ input[type=checkbox],#add
 		while($row=$result->fetch_assoc())
 		{
 			$sub.="<tr><td>".$row['name']."</td><td>".$row['slot']."</td><td>".$row['cut_off']."</td><td>".$row['max']."</td><td><input type='checkbox' class='reg'/><label for='reg'>register</label><span class='reg_form'><form action='home.php' method='post'><input type='text' name='rollno' placeholder='rollno'/><input type='hidden' name='sub_id' value='$row[id]'/><input type='submit'/></form></span></td></tr>";
+			$q="SELECT `id` FROM `reg` WHERE `sub_id`='$row[id]'";
+			$r=$mysqli->query($q);
+			$sub.="<tr><td><ul>";
+			while($rw=$r->fetch_assoc())
+			{
+				$sub.="<li>".$rw['id']."</li>";
+			}
+			$sub.="</ul></td></tr>";
 		}
 		$sub.="</table>";
 		echo $sub;		
@@ -105,17 +111,39 @@ input[type=checkbox],#add
 	}
 	else if($token[0]=='adm')
 	{
-		echo "<h3>FACULTIES</h3>";
-		$query="SELECT name,id FROM (SELECT `faculty.name`,`faculty.id`,`user.validate` FROM faculty INNER JOIN user ON `faculty.id`=`user.id`) AS fac WHERE validate=0;";
+		echo "<h3>Faculties</h3>";
+		$query="SELECT `name`,`id` FROM `faculty` WHERE `id` IN (SELECT `id` FROM `user` WHERE `validate`=0)";
 		$result=$mysqli->query($query);
-		$sub="<form action='validate.php' method='post'><table>";
-		$sub.="<tr><th>WAITING TO BE VALIDATED</th></tr><tr><th>FACULTY NAME</th></tr>";
+		$sub="<form action='home.php' method='post'><table>";
+		$sub.="<tr><th>waiting to be validated</th></tr><tr><th>faculty name</th></tr>";
 		while($row=$result->fetch_assoc())
 		{
-			$sub.="<tr><td>".$row['name']."</td><td><input type='submit' value='validate' name='".$row['id']."'></td></tr>";
+			$sub.="<tr><td>".$row['name']."</td><td><input type='hidden' value='$row[id]' name='id'/><input type='submit' value='validate'></td></tr>";
 		}
 		$sub.="</table></form>";
 		echo $sub;
+	}
+	else if($token[0]=='std')
+	{
+		$std="<h3>List of registered subjects</h3>";		
+		$query="SELECT * FROM `subject` WHERE `id` IN (SELECT `sub_id` FROM `reg` WHERE `id`='$token[1]')";
+		$result=$mysqli->query($query);
+		$std.="<ul>";
+		while($row=$result->fetch_assoc())
+		{
+			$std.="<li>".$row['name']."</li>";
+		}
+		$std.="</ul>";
+		$std.="<h3>List of available subjects</h3>";
+		$query="SELECT * FROM `subject` WHERE `id` NOT IN (SELECT `sub_id` FROM `reg` WHERE `id`='$token[1]')";
+		$result=$mysqli->query($query);
+		$std.="<ul>";
+		while($row=$result->fetch_assoc())
+		{
+			$std.="<li>".$row['name']."</li>";
+		}
+		$std.="</ul>";
+		echo $std;
 	}
 ?>
 	
