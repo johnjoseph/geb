@@ -114,13 +114,13 @@ input[type=checkbox],#add
 		echo "<h3>Faculties</h3>";
 		$query="SELECT `name`,`id` FROM `faculty` WHERE `id` IN (SELECT `id` FROM `user` WHERE `validate`=0)";
 		$result=$mysqli->query($query);
-		$sub="<form action='home.php' method='post'><table>";
+		$sub="<table>";
 		$sub.="<tr><th>waiting to be validated</th></tr><tr><th>faculty name</th></tr>";
 		while($row=$result->fetch_assoc())
 		{
-			$sub.="<tr><td>".$row['name']."</td><td><input type='hidden' value='$row[id]' name='id'/><input type='submit' value='validate'></td></tr>";
+			$sub.="<tr><form action='home.php' method='post'><td>".$row['name']."</td><td><input type='hidden' value='$row[id]' name='id'/><input type='submit' value='validate'></td></form></tr>";
 		}
-		$sub.="</table></form>";
+		$sub.="</table>";
 		echo $sub;
 	}
 	else if($token[0]=='std')
